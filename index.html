@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>3D TSP Solution View</title>
+        <link rel="stylesheet" href="css/style.css">
+	</head>
+	<body>
+        <script src="js/jquery-3.4.1.js"></script>
+        <script src="js/three.min.js"></script>
+        <script src="js/trackball-controls.js"></script>
+        <script src="data/A5.js"></script>
+        <script src="index.js"></script>
+
+        <div id="data-info-panel" class="diagnostics-panel">
+            <span class="flex">
+                <p>No. of Cities:&nbsp</p><p id="lbl-cities-ct"></p>
+            </span>
+            <span class="flex">
+                <p>No. of Tours:&nbsp</p><p id="lbl-tours-ct"></p>
+            </span>
+        </div>
+        <div id="simulation-info-panel" class="diagnostics-panel">
+            <span class="flex">
+                <p>t =&nbsp</p><p id="lbl-current-t"></p>
+            </span>
+            <span class="flex">
+                <p>dist =&nbsp</p><p id="lbl-current-dist"></p>
+            </span>
+        </div>
+        <div id="canvas3d"></div>
+	</body>
+</html>
