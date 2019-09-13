@@ -150,11 +150,11 @@ function setupScene(model) {
 
         if (p.cycles) {
             let label = makeTextSprite(
-                '----' + JSON.stringify(p.cycles),
+                '   ' + printCycle(p.cycles),
                 p.x, p.y, p.z,
                 {
                     fontsize: 72*2,
-                    fontface: "Ariel",
+                    fontface: "Garamond",
                     borderColor: {r:0, g:0, b:255, a:1.0},
                     textColor: {r:255, g:255, b:255, a:1.0},
                     borderThickness:0,
@@ -251,6 +251,21 @@ function composeCycles(c1, c2, N) {
 //console.log(composeCycles([[1,2],[3,4]], [[1,2,3,4,5]], 5))
 console.log('composeCycles([[1,2,5]], [[1,2],[3,4]], 5)')
 console.log(composeCycles([[1,2,5]], [[1,2],[3,4]], 5))
+
+function printCycle(cycles) {
+    let arr = cycles.map(cycle => {
+        let s = '('
+        cycle.forEach(c => s += c)
+        s += ')'
+        return s
+    })
+
+    let s = ''
+    arr.forEach(a => {
+        s += a
+    })
+    return s
+}
 
 function permutationToCycle(permutationMap) {
     let cycles = []
@@ -411,8 +426,8 @@ function cylinderMesh(pointX, pointY, radius, material) {
 		// canvas contents will be used for a texture
 		var texture = new THREE.Texture(canvas);
         texture.magFilter = THREE.NearestFilter;
-        //texture.minFilter = THREE.NearestFilter;
-        texture.minFilter = THREE.LinearMipMapLinearFilter;
+        texture.minFilter = THREE.NearestFilter;
+        ///texture.minFilter = THREE.LinearMipMapLinearFilter;
 		texture.needsUpdate = true;
 		var spriteMaterial = new THREE.SpriteMaterial( { map: texture } );
 		var sprite = new THREE.Sprite( spriteMaterial );
@@ -420,7 +435,7 @@ function cylinderMesh(pointX, pointY, radius, material) {
 		// but the sprite itself is square: 1.0 by 1.0
 		// Note also that the size of the scale factors controls the actual size of the text-label
 		//sprite.scale.set(4,2,1);
-		sprite.scale.set(8/12, 1/12, 1);
+		sprite.scale.set(8/13, 1/13, 1);
 		// set the sprite's position.  Note that this position is in the CENTER of the sprite
 		sprite.position.set(x, y, z);
 		return sprite;
