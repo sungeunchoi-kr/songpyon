@@ -126,3 +126,10 @@ function inverseCycle(cycles, N) {
     let r = permutationToCycle(invpmap)
     return r
 }
+
+function calculateMover(cycleA, cycleB, N) {
+    let inv = inverseCycle(cycleA, N)
+    let e = composeCycles(inv, cycleB, N)
+    return e
+}
+

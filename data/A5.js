@@ -164,6 +164,7 @@ e_data.forEach(pair => {
         A5.v[pair[0]],
         A5.v[pair[1]]
     ])
+    A5.e.isA5 = true
 })
 
 let vi = 0

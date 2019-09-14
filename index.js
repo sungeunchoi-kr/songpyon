@@ -12,6 +12,21 @@ var selectedObject = null;
 var selectedObjectHistory = [];
 
 var DESCENDER_ADJUST = 1.28;
+//const color_p12345 = 0x77abb7;
+//const color_p13452 = 0x254b62;
+//const color_p1234 = 0x22267b;
+
+// edges in A5; a bit brighter.
+const color_p12345 = 0x77abb7;
+const color_p1234A5 = 0x29a19c;
+// edges in S5; a bit darker.
+const color_p13452 = 0x254b62;
+const color_p1234S5 = 0x29435c;
+
+const color_v = 0x115173;
+
+
+
 
 window.addEventListener('load', async function() {
     loadUIComponents();
@@ -123,7 +138,7 @@ function initializeThreeJsEnvironment() {
 }
 
 function setupScene(model) {
-    let geometry = new THREE.BoxGeometry(1.0, 1.0, 1.0);
+    let geometry = new THREE.BoxGeometry(2.0, 2.0, 2.0);
 
     let wireframe = new THREE.LineSegments(
         new THREE.EdgesGeometry(geometry),
@@ -140,8 +155,12 @@ function setupScene(model) {
     // Draw the points.
     let vi = 0
     model.v.forEach(p => {
-        if (p.isA5) var color = 0x00ff00
-        else var color = 0xaaaaaa
+        //if (p.isA5) var color = color_vA5
+        //else var color = 0xaaaaaa
+        var color = 0x555555
+        if (JSON.stringify(model.v[vi].cycles) == '[[]]')
+            color = 0xffd700
+
         var point = new THREE.Mesh(
             new THREE.SphereGeometry(0.015), //, 0.033, 0.033),
             //new THREE.MeshNormalMaterial());
@@ -171,7 +190,7 @@ function setupScene(model) {
                     fontsize: 72,
                     fontface: "Times New Roman",
                     borderColor: {r:0, g:0, b:255, a:1.0},
-                    textColor: {r:255, g:255, b:255, a:1.0},
+                    textColor: {r:255, g:255, b:255, a:0.7},
                     borderThickness: 0,
                     radius: 10,
                     fillColor: {r:255, g:255, b:255, a:0.0},
@@ -189,10 +208,24 @@ function setupScene(model) {
         let v0 = new THREE.Vector3(e[0].x, e[0].y, e[0].z)
         let v1 = new THREE.Vector3(e[1].x, e[1].y, e[1].z)
 
-        if (e.isA5)
-            var color = 0xff0000
-        else
-            var color = 0x0000aa
+        let mCycle1 = calculateMover(e[0].cycles, e[1].cycles, 5)
+        let mCycle2 = calculateMover(e[1].cycles, e[0].cycles, 5)
+        if (JSON.stringify(mCycle1) === '[[1,2,3,4,5]]' ||
+            JSON.stringify(mCycle2) === '[[1,2,3,4,5]]') {
+            var color = color_p12345
+        }
+        else if (JSON.stringify(mCycle1) === '[[1,2],[3,4]]' ||
+            JSON.stringify(mCycle2) === '[[1,2],[3,4]]') {
+            if (e.isA5) {
+                var color = color_p1234A5
+            } else {
+                var color = color_p1234S5
+            }
+        }
+        else if (JSON.stringify(mCycle1) === '[[1,3,4,5,2]]' ||
+            JSON.stringify(mCycle2) === '[[1,3,4,5,2]]') {
+            var color = color_p13452
+        }
 
         let edge = 
             cylinderMesh(
