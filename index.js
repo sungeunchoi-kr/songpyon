@@ -1,10 +1,14 @@
-var host = 'http://tspv.sungeunchoi.com:8080';
-
 var camera, scene, renderer, controls;
 var lblCurrentT = null;
 var lblCurrentDistance = null;
 var lblCitiesCt = null;
 var lblToursCt = null;
+
+// Mode:
+// - path_from_id
+//     If you select a vertex, it draws a path from the identity
+//     element to the selected vertex.
+var controlsMode = 'mode_path_from_id';
 
 var clickableMeshes = [];
 
@@ -12,9 +16,6 @@ var selectedObject = null;
 var selectedObjectHistory = [];
 
 var DESCENDER_ADJUST = 1.28;
-//const color_p12345 = 0x77abb7;
-//const color_p13452 = 0x254b62;
-//const color_p1234 = 0x22267b;
 
 // edges in A5; a bit brighter.
 const color_p12345 = 0x77abb7;
@@ -24,9 +25,6 @@ const color_p13452 = 0x254b62;
 const color_p1234S5 = 0x29435c;
 
 const color_v = 0x115173;
-
-
-
 
 window.addEventListener('load', async function() {
     loadUIComponents();
@@ -75,12 +73,28 @@ window.addEventListener('load', async function() {
             selectedObject = null;
         }
 
-        if (selectedObject && selectedObjectHistory[selectedObjectHistory.length-1]) {
-            let a = selectedObjectHistory[selectedObjectHistory.length-1].data.cycles
-            let b = selectedObject.data.cycles
-            let inv = inverseCycle(a, 5)
-            let e = composeCycles(inv, b, 5)
-            console.log(printCycle(e))
+        if (selectedObject != null) {
+            onVertexSelected(selectedObject.data)
+        }
+
+        updateView()
+
+        //if (selectedObject && selectedObjectHistory[selectedObjectHistory.length-1]) {
+        //    let a = selectedObjectHistory[selectedObjectHistory.length-1].data.cycles
+        //    let b = selectedObject.data.cycles
+        //    let inv = inverseCycle(a, 5)
+        //    let e = composeCycles(inv, b, 5)
+        //    console.log(printCycle(e))
+        //}
+    }
+
+    function onVertexSelected(data) {
+        if (controlsMode === 'mode_path_from_id') {
+            clickableMeshes.forEach(m => m.data.selectionHighlight = false)
+            data.selectionHighlight = true
+
+            console.log(data)
+            // we find the shortest path from id to data.cycles.
         }
     }
 
@@ -90,22 +104,22 @@ window.addEventListener('load', async function() {
     document.addEventListener('mousemove', onDocumentMouseMove, false);
     $(document).on("keypress", function (e) {
         // use e.which
-        console.log(e.which)
-        if ('s'.charCodeAt() === e.which) {
-            selectedObject.data.cycles = composeCycles(
-                selectedObjectHistory[selectedObjectHistory.length - 1].data.cycles,
-                [[1,2,3,4,5]], 5)
+        //console.log(e.which)
+        //if ('s'.charCodeAt() === e.which) {
+        //    selectedObject.data.cycles = composeCycles(
+        //        selectedObjectHistory[selectedObjectHistory.length - 1].data.cycles,
+        //        [[1,2,3,4,5]], 5)
 
-            console.log('A5.v['+selectedObject.data.index +'].cycles = '
-                + JSON.stringify(selectedObject.data.cycles))
-        } else if ('t'.charCodeAt() === e.which) {
-            selectedObject.data.cycles = composeCycles(
-                selectedObjectHistory[selectedObjectHistory.length - 1].data.cycles,
-                [[1,2],[3,4]], 5)
+        //    console.log('A5.v['+selectedObject.data.index +'].cycles = '
+        //        + JSON.stringify(selectedObject.data.cycles))
+        //} else if ('t'.charCodeAt() === e.which) {
+        //    selectedObject.data.cycles = composeCycles(
+        //        selectedObjectHistory[selectedObjectHistory.length - 1].data.cycles,
+        //        [[1,2],[3,4]], 5)
 
-            console.log('A5.v['+selectedObject.data.index +'].cycles = '
-                + JSON.stringify(selectedObject.data.cycles))
-        }
+        //    console.log('A5.v['+selectedObject.data.index +'].cycles = '
+        //        + JSON.stringify(selectedObject.data.cycles))
+        //}
     });
 });
 
@@ -190,7 +204,7 @@ function setupScene(model) {
                     fontsize: 72,
                     fontface: "Times New Roman",
                     borderColor: {r:0, g:0, b:255, a:1.0},
-                    textColor: {r:255, g:255, b:255, a:0.7},
+                    textColor: {r:255, g:255, b:255, a:0.85},
                     borderThickness: 0,
                     radius: 10,
                     fillColor: {r:255, g:255, b:255, a:0.0},
@@ -226,6 +240,10 @@ function setupScene(model) {
             JSON.stringify(mCycle2) === '[[1,3,4,5,2]]') {
             var color = color_p13452
         }
+        else if (JSON.stringify(mCycle1) === '[[1,2]]' ||
+            JSON.stringify(mCycle2) === '[[1,2]]') {
+            var color = 0x4ecca3
+        }
 
         let edge = 
             cylinderMesh(
@@ -252,10 +270,16 @@ async function loadModel() {
     S5.v.forEach(v => v.isA5 = false)
     S5.e.forEach(e => e.isA5 = false)
 
-    return {
-        v: A5.v.concat(S5.v),
-        e: A5.e.concat(S5.e),
-    };
+    let v = A5.v.concat(S5.v)
+    let e = A5.e.concat(S5.e)
+
+    // the (1,2) that connects A5 and S5.
+    e.push([
+        v[4],
+        v[64]
+    ])
+
+    return { v, e }
 }
 
 function cylinderMesh(pointX, pointY, radius, material) {
@@ -386,36 +410,17 @@ function getCanvasColor ( color ) {
     return "rgba(" + color.r + "," + color.g + "," + color.b + "," + color.a + ")";
 }
 
-/**
- * Just a debug feature to draw cross-hair for visual reference
- */
-function drawCrossHairs ( context, cx, cy ) {
-    context.strokeStyle = "rgba(0,255,0,1)";
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(cx-150,cy);
-    context.lineTo(cx+150,cy);
-    context.stroke();
-    context.strokeStyle = "rgba(0,255,0,1)";
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(cx,cy-150);
-    context.lineTo(cx,cy+150);
-    context.stroke();
-    context.strokeStyle = "rgba(0,255,0,1)";
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(cx-150,cy);
-    context.lineTo(cx+150,cy);
-    context.stroke();
-    context.strokeStyle = "rgba(0,255,0,1)";
-    context.lineWidth = 2;
-    context.beginPath();
-    context.moveTo(cx,cy-150);
-    context.lineTo(cx,cy+150);
-    context.stroke();
-}
 ///////////////////////////////////////////////////////////////////
+
+function updateView() {
+    clickableMeshes.forEach(m => {
+        if (m.data.selectionHighlight) {
+            m.material.color.setHex(0xffffff);
+        } else {
+
+        }
+    })
+}
 
 let lineMaterial = new THREE.LineBasicMaterial({
     color: 0xff0000,
