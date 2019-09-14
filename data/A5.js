@@ -1,5 +1,5 @@
-window.A5 = {}
-window.A5.v = [
+A5 = {}
+A5.v = [
     {x:-0.114734,y:0.122778,z:0.902062},
     {x:-0.321031,y:0.000000,z:0.988031},
     {x:-0.242232,y:-0.198658,z:1.127133},
@@ -155,35 +155,25 @@ let e_data = [
     [36,57],
 ];
 
-window.A5.e = []
+A5.e = []
 e_data.forEach(pair => {
     pair[0]--
     pair[1]--
 
-    window.A5.e.push([
-        window.A5.v[pair[0]],
-        window.A5.v[pair[1]]
+    A5.e.push([
+        A5.v[pair[0]],
+        A5.v[pair[1]]
     ])
 })
 
-// the below is for making connection data.
 let vi = 0
-window.A5.v.forEach(v => {
-    //console.log('looking for edges coming out of v=%O:', v)
-    //e_data.forEach(pair => {
-    //    if (pair[0] == vi) {
-    //    } else if (pair[1] == vi) {
-    //    }
-    //})
-
+A5.v.forEach(v => {
     v.x += 0.114734
     v.z += -0.508891 
     v.y += 0.29272
-
     ++vi
 })
 
-let A5 = window.A5
 A5.v[4].cycles = [[]]
 A5.v[0].cycles = [[1,2,3,4,5]]
 A5.v[1].cycles = [[1,3,5,2,4]]
@@ -244,5 +234,3 @@ A5.v[35].cycles = [[1,5,3,4,2]]
 A5.v[39].cycles = [[1,4],[2,5]]
 A5.v[38].cycles = [[1,3,2,4,5]]
 A5.v[37].cycles = [[1,2,3]]
-
-
